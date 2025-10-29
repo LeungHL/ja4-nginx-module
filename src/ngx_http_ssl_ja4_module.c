@@ -258,7 +258,7 @@ int ngx_ssl_ja4(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja4_t *ja4)
 
         for (i = 0; i < c->ssl->extensions_sz; ++i)
         {
-            if (ngx_ssl_ja4_is_ext_greased(c->ssl->extensions[i])) {
+            if (ngx_ssl_ja4_is_ext_greased(c->ssl->extensions[i]) || ngx_ssl_ja4_is_ext_dynamic(c->ssl->extensions[i])) {
                 continue;
             }
 
@@ -291,9 +291,9 @@ int ngx_ssl_ja4(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja4_t *ja4)
             // for no psk ignored extensions are not counted, not hashed
 
             // check if the extension is not a PSK extension
-            if (ngx_ssl_ja4_is_ext_dynamic(c->ssl->extensions[i])) {
-                continue;
-            }
+//            if (ngx_ssl_ja4_is_ext_dynamic(c->ssl->extensions[i])) {
+//                continue;
+//            }
 
             // Allocate memory for the extension string and copy it
             ja4->extensions_no_psk[ja4->extensions_no_psk_count] = ngx_pnalloc(pool, ext_len);
@@ -683,7 +683,10 @@ void ngx_ssl_ja4_fp_string(ngx_pool_t *pool, ngx_ssl_ja4_t *ja4, ngx_str_t *out)
     }
     else
     {
-        ngx_snprintf(out->data + cur, 2, "%s", ja4->alpn_first_value);
+        // Get the first and last character from ja4->alpn_first_value
+        char first = ja4->alpn_first_value[0];
+        char last = ja4->alpn_first_value[ngx_strlen(ja4->alpn_first_value) - 1];
+        ngx_snprintf(out->data + cur, 3, "%c%c", first, last);  // Format them into out->data
     }
     cur += 2;
 
@@ -841,7 +844,10 @@ void ngx_ssl_ja4one_fp(ngx_pool_t *pool, ngx_ssl_ja4_t *ja4, ngx_str_t *out)
     }
     else
     {
-        ngx_snprintf(out->data + cur, 3, "%s", ja4->alpn_first_value);
+        // Get the first and last character from ja4->alpn_first_value
+        char first = ja4->alpn_first_value[0];
+        char last = ja4->alpn_first_value[ngx_strlen(ja4->alpn_first_value) - 1];
+        ngx_snprintf(out->data + cur, 3, "%c%c", first, last);  // Format them into out->data
     }
     cur += 2;
 
